@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: fileshare
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/fileshare}
+    username: ${SPRING_DATASOURCE_USERNAME:fileshare}
+    password: ${SPRING_DATASOURCE_PASSWORD:fileshare_secret}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      # Flyway manages the schema; Hibernate only validates it
+      ddl-auto: validate
+    show-sql: false
+    # Prevents connection leaks in web tier
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  # Multipart upload via the app is disabled — clients upload directly to DO Spaces.
+  # This setting only applies if a direct-upload fallback endpoint were ever added.
+  servlet:
+    multipart:
+      enabled: false
+
+  # Ensure Jackson serializes OffsetDateTime as ISO-8601 strings
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# DigitalOcean Spaces + JWT + HMAC configuration
+app:
+  do-spaces:
+    access-key: ${APP_DO_SPACES_ACCESS_KEY}
+    secret-key: ${APP_DO_SPACES_SECRET_KEY}
+    endpoint: ${APP_DO_SPACES_ENDPOINT:https://nyc3.digitaloceanspaces.com}
+    region: ${APP_DO_SPACES_REGION:nyc3}
+    bucket: ${APP_DO_SPACES_BUCKET}
+    # How long pre-signed part PUT URLs remain valid (minutes)
+    presigned-url-ttl-minutes: 60
+
+  jwt:
+    secret: ${APP_JWT_SECRET}
+    # Token lifetime: 24 hours
+    expiration-ms: 86400000
+
+  hmac:
+    secret: ${APP_HMAC_SECRET}
+    # Default signed download link TTL: 1 hour
+    default-link-ttl-seconds: 3600
+
+  upload:
+    # Default chunk size: 10 MB
+    default-chunk-size-bytes: 10485760
+    # Minimum chunk size: 5 MB (S3 hard minimum for all parts except the last)
+    min-chunk-size-bytes: 5242880
+    # Maximum file size: 50 GB
+    max-file-size-bytes: 53687091200
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.fileshare: DEBUG
+    software.amazon.awssdk: WARN
+    org.springframework.security: INFO

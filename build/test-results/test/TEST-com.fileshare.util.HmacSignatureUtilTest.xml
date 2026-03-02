@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.fileshare.util.HmacSignatureUtilTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-02T21:14:31" hostname="0dae78c9a02c" time="0.011">
+  <properties/>
+  <testcase name="validateToken_expiredToken_throwsTokenExpiredException()" classname="com.fileshare.util.HmacSignatureUtilTest" time="0.007"/>
+  <testcase name="validateToken_malformedToken_throwsInvalidTokenException()" classname="com.fileshare.util.HmacSignatureUtilTest" time="0.0"/>
+  <testcase name="tokensFromDifferentSecrets_areNotCrossVerifiable()" classname="com.fileshare.util.HmacSignatureUtilTest" time="0.001"/>
+  <testcase name="createAndValidateToken_success()" classname="com.fileshare.util.HmacSignatureUtilTest" time="0.001"/>
+  <testcase name="validateToken_tamperedSignature_throwsInvalidTokenException()" classname="com.fileshare.util.HmacSignatureUtilTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

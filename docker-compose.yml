@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fileshare-postgres
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fileshare}
+      POSTGRES_USER: ${POSTGRES_USER:-fileshare}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fileshare_secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fileshare}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    build: .
+    image: fileshare-app
+    container_name: fileshare-app
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-fileshare}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-fileshare}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-fileshare_secret}
+      # APP_DO_SPACES_* and APP_JWT_SECRET / APP_HMAC_SECRET are loaded from .env via env_file above
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres_data:
